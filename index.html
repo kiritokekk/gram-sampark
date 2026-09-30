@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gram Sampark</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--g:#1f6b3a;--gd:#154d29;--gl:#e6f3ea;--bg:#f6faf7;--tx:#1b2a20;--mu:#5d6e63;--bd:#cfe0d4;--red:#b3261e;--am:#b26a00}
+*{box-sizing:border-box}
+body{margin:0;font:18px/1.5 "Noto Sans Devanagari","Segoe UI",system-ui,sans-serif;background:linear-gradient(#e2f2e7,#f6fbf3 55%,#ecf6e8) fixed;color:var(--tx);min-height:100vh}
+header{position:relative;z-index:2;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:2px solid var(--g)}
+header h1{margin:0;font-size:22px;color:var(--g)}
+main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:16px 16px 40vh}
+.card{background:rgba(255,255,255,.96);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 6px 20px rgba(31,107,58,.10)}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--bd);border-radius:8px;background:#fff}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid #8fc9a2}
+button{padding:12px 18px;border:0;border-radius:8px;background:var(--g);color:#fff;font-weight:600;cursor:pointer}
+button:hover{background:var(--gd)}
+button.alt{background:var(--gl);color:var(--gd)}
+button.on{background:var(--g);color:#fff}
+button.sm{padding:6px 12px;font-size:15px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.row>*{flex:1 1 140px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button{flex:1}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:14px;font-weight:600;background:var(--gl);color:var(--gd)}
+.badge.Received{background:#e8eef8;color:#26458a}.badge.InProgress{background:#fff1d6;color:var(--am)}
+.badge.Rejected{background:#fde7e5;color:var(--red)}
+.ref{color:var(--mu);font-size:14px}
+.reply{background:var(--gl);border-left:4px solid var(--g);padding:8px 12px;margin-top:8px;border-radius:4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:10px 14px}
+.stat b{display:block;font-size:30px;color:var(--g)}
+.err{color:var(--red);font-weight:600;margin-top:10px}.ok{color:var(--g);font-weight:600;margin-top:10px}
+.mu{color:var(--mu);font-size:15px}
+a{color:var(--g)}
+.stat{cursor:pointer}.stat.on{border-color:var(--g);box-shadow:0 0 0 2px var(--g)}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:14px;font-weight:600;margin-left:4px}
+.chk{background:#dff3e5;color:var(--gd)}.unchk{background:#fff1d6;color:var(--am)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--gd);color:#fff;padding:12px 22px;border-radius:99px;z-index:5;display:none;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.lang{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pw{position:relative}.pw input{padding-right:92px}
+.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:6px 12px;font-size:15px;background:var(--gl);color:var(--gd)}
+.eye:hover{background:#d3e9da}
+.scene{position:fixed;left:0;right:0;bottom:0;height:46vh;z-index:0;pointer-events:none}
+.scene svg{width:100%;height:100%;display:block}
+.hero{text-align:center;padding:22px 8px 10px}
+.hero h2{margin:0;font-size:32px;color:var(--gd)}
+.hero p{margin:6px 0 0;color:var(--mu)}
+header h1{display:flex;align-items:center;gap:8px}
+.reftrack{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.reftrack input{flex:1 1 260px}.timeline{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.timeline .step{flex:1 1 130px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:#f7faf8;text-align:center;font-size:14px}.timeline .done{background:var(--gl);border-color:#9bc9aa;color:var(--gd);font-weight:700}.timeline .current{box-shadow:0 0 0 2px var(--g)}.analytics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.chartcard{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:12px}.barrow{display:grid;grid-template-columns:110px 1fr 36px;gap:8px;align-items:center;margin:8px 0;font-size:14px}.bar{height:12px;background:var(--gl);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g);border-radius:99px}.preview{max-width:180px;max-height:120px;border-radius:8px;border:1px solid var(--bd);margin-top:8px;display:none}@media(max-width:700px){.analytics{grid-template-columns:1fr}.barrow{grid-template-columns:85px 1fr 30px}}</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true"><svg viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+<circle cx="980" cy="100" r="72" fill="#f7d774" opacity=".25"/><circle cx="980" cy="100" r="46" fill="#f7d774" opacity=".9"/>
+<path d="M0 250 Q200 170 420 240 T820 220 T1200 230 V420 H0Z" fill="#d3ead9"/>
+<path d="M0 300 Q250 230 520 290 T1200 270 V420 H0Z" fill="#a9d6b6"/>
+<path d="M0 340 Q300 290 600 335 T1200 320 V420 H0Z" fill="#7fbf95"/>
+<g stroke="#5fa97c" stroke-width="3" fill="none" opacity=".7"><path d="M0 368 Q300 338 600 366 T1200 352"/><path d="M0 388 Q300 360 600 386 T1200 374"/></g>
+<path d="M0 402 Q300 378 600 400 T1200 392 V420 H0Z" fill="#4f9d6b"/>
+<g transform="translate(170 272)"><rect y="20" width="44" height="30" fill="#f4e8d0"/><path d="M-6 22 22 0 50 22Z" fill="#b5653a"/><rect x="18" y="32" width="9" height="18" fill="#8a5a3c"/></g>
+<g transform="translate(262 292) scale(.8)"><rect y="20" width="44" height="30" fill="#f4e8d0"/><path d="M-6 22 22 0 50 22Z" fill="#b5653a"/><rect x="18" y="32" width="9" height="18" fill="#8a5a3c"/></g>
+<g transform="translate(860 288) scale(.85)"><rect y="20" width="44" height="30" fill="#f4e8d0"/><path d="M-6 22 22 0 50 22Z" fill="#b5653a"/><rect x="18" y="32" width="9" height="18" fill="#8a5a3c"/></g>
+<g><rect x="120" y="296" width="6" height="34" fill="#6b4a2f"/><circle cx="123" cy="288" r="24" fill="#3f8f5e"/></g>
+<g><rect x="330" y="306" width="5" height="28" fill="#6b4a2f"/><circle cx="332" cy="299" r="19" fill="#3f8f5e"/></g>
+<g><rect x="760" y="300" width="6" height="32" fill="#6b4a2f"/><circle cx="763" cy="292" r="22" fill="#3f8f5e"/></g>
+<g><rect x="1040" y="290" width="6" height="36" fill="#6b4a2f"/><circle cx="1043" cy="281" r="26" fill="#3f8f5e"/></g>
+</svg></div>
+<header>
+  <h1><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="15" fill="#1f6b3a"/><path d="M7 16 15 8l8 8v7H7Z" fill="#fff"/><rect x="13" y="17" width="4" height="6" fill="#1f6b3a"/></svg>Gram Sampark</h1>
+  <div class="lang">
+    <button class="sm alt" onclick="setLang('en')">English</button>
+    <button class="sm alt" onclick="setLang('hi')">हिंदी</button>
+    <button class="sm alt" onclick="setLang('mr')">मराठी</button>
+    <button class="sm" id="logout" onclick="logout()" style="display:none"></button>
+  </div>
+</header>
+<main id="app"></main>
+<div id="toast" role="status"></div>
+
+<script>
+/* ===== 1. CONNECT TO SUPABASE (values from your project) ===== */
+const SUPABASE_URL = "https://tqtxzuiuzvycixqvadlc.supabase.co";
+const SUPABASE_KEY = "sb_publishable_i83ykkM-2ByPJOox90bokA_zvNLZ4U8";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ===== 2. LANGUAGES ===== */
+const T = {
+ en:{login:"Log in",register:"Register",phone:"Phone number",pass:"Password",name:"Full name",email:"Email",vid:"Village ID / ration card (optional)",ward:"Ward",
+  newc:"New complaint",mine:"My complaints",cat:"Category",title:"Title",desc:"Description",prio:"Priority",photo:"Photo (optional)",submit:"Submit complaint",
+  logout:"Log out",empty:"Nothing here yet.",reply:"Reply from the head",all:"All",search:"Search title or name",status:"Status",save:"Save update",replyph:"Write a reply",
+  csv:"Download CSV",sent:"Complaint submitted. Reference:",normal:"Normal",urgent:"Urgent",total:"Total",dash:"Head's dashboard",from:"From",viewphoto:"View photo",
+  cats:["Water","Roads","Electricity","Sanitation","Health","Education","Other","General Query"],
+  sts:{Received:"Received","In Progress":"In Progress",Resolved:"Solved",Rejected:"Rejected"},loading:"Loading...",region:"Area",choose:"Choose",ident:"Phone number or email",forgot:"Forgot password?",sendcode:"Send verification code",code:"6-digit code from your email",verify:"Verify and create account",back:"Back",newpass:"New password",byphone:"With phone",byemail:"With email",phoneopt:"Phone number (optional)",tag:"Raise your concern. Track its progress.",show:"Show",hide:"Hide",unchecked:"Unchecked",notchecked:"Not checked yet",seen:"Checked by the head",saved:"Saved. Status:"},
+ hi:{login:"लॉग इन",register:"पंजीकरण",phone:"फ़ोन नंबर",pass:"पासवर्ड",name:"पूरा नाम",email:"ईमेल",vid:"ग्राम आईडी / राशन कार्ड (वैकल्पिक)",ward:"वार्ड",
+  newc:"नई शिकायत",mine:"मेरी शिकायतें",cat:"श्रेणी",title:"शीर्षक",desc:"विवरण",prio:"प्राथमिकता",photo:"फ़ोटो (वैकल्पिक)",submit:"शिकायत भेजें",
+  logout:"लॉग आउट",empty:"अभी कुछ नहीं है।",reply:"प्रमुख का जवाब",all:"सभी",search:"शीर्षक या नाम खोजें",status:"स्थिति",save:"अपडेट सहेजें",replyph:"जवाब लिखें",
+  csv:"CSV डाउनलोड",sent:"शिकायत भेजी गई। संदर्भ:",normal:"सामान्य",urgent:"अत्यावश्यक",total:"कुल",dash:"प्रमुख का डैशबोर्ड",from:"भेजने वाला",viewphoto:"फ़ोटो देखें",
+  cats:["पानी","सड़क","बिजली","स्वच्छता","स्वास्थ्य","शिक्षा","अन्य","सामान्य प्रश्न"],
+  sts:{Received:"प्राप्त","In Progress":"प्रक्रिया में",Resolved:"हल हुआ",Rejected:"अस्वीकृत"},loading:"लोड हो रहा है...",region:"परिसर",choose:"चुनें",ident:"फ़ोन नंबर या ईमेल",forgot:"पासवर्ड भूल गए?",sendcode:"सत्यापन कोड भेजें",code:"ईमेल में आया 6 अंकों का कोड",verify:"सत्यापित करें और खाता बनाएँ",back:"वापस",newpass:"नया पासवर्ड",byphone:"फ़ोन से",byemail:"ईमेल से",phoneopt:"फ़ोन नंबर (वैकल्पिक)",tag:"अपनी शिकायत दर्ज करें, प्रगति देखें।",show:"दिखाएँ",hide:"छिपाएँ",unchecked:"अनदेखी",notchecked:"अभी देखी नहीं गई",seen:"प्रमुख ने देखा",saved:"सहेजा गया। स्थिति:"},
+ mr:{login:"लॉग इन",register:"नोंदणी",phone:"फोन नंबर",pass:"पासवर्ड",name:"पूर्ण नाव",email:"ईमेल",vid:"गाव आयडी / रेशन कार्ड (पर्यायी)",ward:"वॉर्ड",
+  newc:"नवी तक्रार",mine:"माझ्या तक्रारी",cat:"प्रकार",title:"शीर्षक",desc:"वर्णन",prio:"प्राधान्य",photo:"फोटो (पर्यायी)",submit:"तक्रार पाठवा",
+  logout:"लॉग आउट",empty:"अजून काही नाही.",reply:"प्रमुखांचे उत्तर",all:"सर्व",search:"शीर्षक किंवा नाव शोधा",status:"स्थिती",save:"अपडेट जतन करा",replyph:"उत्तर लिहा",
+  csv:"CSV डाउनलोड",sent:"तक्रार पाठवली. संदर्भ:",normal:"सामान्य",urgent:"तातडीची",total:"एकूण",dash:"प्रमुखांचा डॅशबोर्ड",from:"कोणाकडून",viewphoto:"फोटो पहा",
+  cats:["पाणी","रस्ते","वीज","स्वच्छता","आरोग्य","शिक्षण","इतर","सामान्य प्रश्न"],
+  sts:{Received:"प्राप्त","In Progress":"प्रक्रियेत",Resolved:"सोडवली",Rejected:"नाकारली"},loading:"लोड होत आहे...",region:"परिसर",choose:"निवडा",ident:"फोन नंबर किंवा ईमेल",forgot:"पासवर्ड विसरलात?",sendcode:"पडताळणी कोड पाठवा",code:"ईमेलवर आलेला 6 अंकी कोड",verify:"पडताळा आणि खाते तयार करा",back:"मागे",newpass:"नवीन पासवर्ड",byphone:"फोनने",byemail:"ईमेलने",phoneopt:"फोन नंबर (पर्यायी)",tag:"तुमची तक्रार नोंदवा, प्रगती पहा.",show:"दाखवा",hide:"लपवा",unchecked:"न तपासलेल्या",notchecked:"अजून तपासली नाही",seen:"प्रमुखांनी तपासले",saved:"जतन केले. स्थिती:"}
+};
+/* WARD AND AREA DATA: from the Nagpur Municipal Corporation "Zone, Ward and Area Details" list.
+   Structure: zone -> ward number -> areas. Add or remove names freely. */
+const ZONES = {
+ "Laxmi Nagar": {
+  16:["Bajaj Nagar","Laxmi Nagar","Vasant Nagar","Ramdaspeth","Old Ajni","Somalwada","Samarth Nagar","Chhatrapati Nagar","Hindustan Colony","Prashant Nagar","Surendra Nagar","Vivekananda Nagar","Karve Nagar"],
+  36:["Shastri Layout","Trimurti Nagar","Khamla","Vyankatesh Nagar","Snehnagar","Jaiprakash Nagar","Sahakar Nagar","Sonegaon","Milind Nagar","Bhamti","Manish Layout","Bhende Layout","Pandey Layout","Tapovan"],
+  37:["Subhash Nagar","Kamgar Nagar","Gopal Nagar","Parsodi","Pratap Nagar","Atre Layout","Tatyatope Nagar","Bhamti","Shraddhanand Peth","Swaroop Nagar","Dindayal Nagar","Lokseva Nagar"],
+  38:["Kalyan Nagar","Vasudeo Nagar","Shraddha Nagar","Ramai Nagar","Rajendra Nagar","Hingna Naka","Jaitala","Shivangaon","Bhosale Nagar","Ekmata Nagar","Takli Sim"]},
+ "Dharampeth": {
+  12:["Dabha","Tekadiwadi","Press Layout","Ganga Nagar","Jagdish Nagar","Surendragarh","Jagruti Colony","Friends Colony","Akar Nagar","Gajanan Nagar","Narmada Colony"],
+  13:["Vayusena Nagar","Hazari Pahad","Malabar Colony","New Futala","Saraikar Nagar","Pandharabodi","Sanjay Nagar","Ambazari","Verma Layout","Gandhi Nagar","Abhyankar Nagar","Madhav Nagar","Kamla Nagar","Mahadeo Nagar"],
+  14:["Civil Lines","Sadar","Gawalipura","Gond Mohalla","Khatikpura","Bijali Nagar","Gittikhadan","Azad Nagar","Ravi Nagar","Bharat Nagar","Telangkhedi","Tilak Nagar","Priyadarshani Colony","Ramgiri"],
+  15:["Gokulpeth","Shivaji Nagar","Shankar Nagar","Ramdaspeth","Dharampeth Extension","Giripeth","Maharajbagh","Khare Town","Sitabuldi","Choti Dhantoli","Kumbhar Toli","Telipura","Anand Nagar","Mariyam Nagar"]},
+ "Hanuman Nagar": {
+  29:["Mahalgi Nagar","Mahatma Gandhi Nagar","Gajanan Nagar","Besa","Sanmarg Nagar","Santoshi Mata Nagar","Suryodaya Nagar","Sudarshan Nagar","Hudkeshwar","Narsala","New Nehru Nagar","Sanjay Nagar","Brahma Nagar","Swagat Nagar"],
+  31:["Hanuman Nagar","Chandan Nagar","Vakilpeth","Hazarewadi","Reshimbag","Nandanvan","Shiv Nagar","Ganesh Nagar","Tukdoji Nagar","Mahesh Colony","Gayatri Nagar","Keshav Nagar"],
+  32:["Bajrang Nagar","Savitribai Phule Nagar","Taj Nagar","Jawahar Nagar","Khankhoje Nagar","Kailash Nagar","Old Subhedar Layout","New Subhedar Layout","Chakradhar Nagar","Uday Nagar","Gurudev Nagar","Ayodhya Nagar","Durga Nagar","Mahalaxmi Nagar","Ambika Nagar"],
+  34:["Manewada","Vinkar Colony","Gajanan Nagar","Omkar Nagar","Shahu Nagar","Janaki Nagar","Jai Bhole Nagar","Shivshakti Nagar","Akash Nagar","Jaihind Nagar","Ramteke Nagar","Mahakali Nagar","Vidnyan Nagar"]},
+ "Dhantoli": {
+  17:["Ganeshpeth","Shanivari","Gujarwadi","Bara Signal","Jatarodi","Indira Nagar","Rajabaksha","Vanjari Nagar","Rambagh","Imamwada","Untkhana","Chandramani Nagar","Vishwakarma Nagar"],
+  33:["Kausalyayan Nagar","Kukde Layout","Joshiwadi","New Babulkheda","Parvati Nagar","New Kailash Nagar","Pragati Nagar","Nalanda Nagar","Kunjilalpeth","Vasant Nagar","Havrapeth","Dwarkapuri","Bhagwan Nagar","Balaji Nagar","Ulhas Nagar","Naik Nagar","Shramjivi Nagar"],
+  35:["Ajni Railway Colony","Sundarban Layout","Ranwadi","Shrinagar","Suyog Nagar","Vijayanand Society","Manish Nagar","Kachore Patil Nagar","Bhim Nagar","Renuka Vihar","Jogi Nagar","Shyam Nagar"]},
+ "Nehru Nagar": {
+  26:["Wathoda","Shrikrushna Nagar","Vidyanagari","Pandit Nagar","Shesh Nagar","Shaktimata Nagar","Darshan Colony","Antuji Nagar","Chandmari","Pawanshakti Nagar"],
+  27:["Nehru Nagar","Om Nagar","Sudampuri","Gurudev Nagar","Bapu Nagar","Anand Nagar","Nandanvan Colony","Rajendra Nagar","New Prashant Nagar","Hasanbagh","Sadbhavna Nagar"],
+  28:["Ramna Maroti","Harpur","Kamgar Nagar","Ishwar Nagar","Dhanwantari Nagar","Chitnis Nagar","Dighori","Beldar Nagar","Tukdoji Nagar","Gadge Nagar","Diamond Nagar","Pragati Colony","Bhagyashree Nagar","Kirti Nagar"],
+  30:["Bidipeth","New Subhedar Layout","Dattatraya Nagar","Ashirwad Nagar","Tajbagh","Sartaj Colony","Santoshi Mata Nagar","Solanki Wadi","Nirala Layout","Shambagh","Sakkardara"]},
+ "Gandhibagh": {
+  8:["Boriyapura","Saifi Nagar","Ansar Nagar","Bhankheda","Momin Pura","Bakra Mandi","Timki","Khatikpura","Kasabpura","Panaipeth"],
+  18:["Chitnavispura","Shivaji Nagar","Killa","Naik Road","Garudkhamb","Kotwali","Bhosle Wada","Town Hall","Shingada Market","Colonebagh","Gadikhana","Johripura","Kothi Road","Sirspeth","Mattipura"],
+  19:["Bajeria","Lodhipura","Bhaldarpura","Ganjipeth","Loharpura","Gandhibagh","Hansapuri","Kasabpura","Timki","Jalalpura","Jyoti Nagar","Sarafa Oli","Namkganj"],
+  22:["Quetta Colony","Lakadganj","Adarsh Nagar","Old Mangalwari","Mattipura","Sudarshan Colony","Nababpura","Lakdipul","Old Bagadganj","Gangabai Ghat","Itwara","Kumbharpura"]},
+ "Satranjipura": {
+  5:["Binaki Mangalwari","Anand Nagar","Sanjay Gandhi Nagar","Indira Mata Nagar","Bhola Nagar","Mehendibagh","Jamdar Wadi","Vrindavan Nagar","Joshipura","Namdev Nagar","Atre Nagar","Kawarapeth","Shanti Nagar","Dhammadeep Nagar"],
+  20:["Tandapeth","Thakkar Gram","Vinkar Colony","Lendi Talav","Maskasath","Machhisath","Jagnath Budhwari","Saoji Mohalla","Kumbharpura","Pili Marbat","Naik Talav","Naikwadi","Panchpaoli","Barse Nagar"],
+  21:["Prem Nagar","Mahesh Nagar","Yendalwadi","Bastarwari","Shanti Nagar","Parwarpura","Satranjipura","Kayamibagh","Khairipura"]},
+ "Lakadganj": {
+  4:["Kalamna","Wanjra","Wanjri","Bharatwada"],
+  23:["Dhanya Bazar","Sudarshan Nagar","Wardhaman Nagar","Deshpande Layout","Padole Nagar","Hivri Nagar","Shastri Nagar","Kumbhar Toli","Vyankatesh Nagar"],
+  24:["Bharat Nagar","Netaji Nagar","Chikhali","Sonba Nagar","Mini Mata Nagar","Khapri","Surya Nagar"],
+  25:["Punapur","Bhavani Nagar","Pardi","Navin Nagar","Samata Nagar","Shivshakti Nagar","Shyam Nagar","Durga Nagar","Hanuman Nagar","Bhandewadi","Anant Nagar"]},
+ "Aashi Nagar": {
+  2:["Narigaon","Sugat Nagar","Kabir Nagar","Kalpana Nagar","Mayur Nagar","Uppalwadi","Ramai Nagar","Nalanda Nagar","Sanyal Nagar","Kapil Nagar","Kamgar Nagar","Prabhat Colony","Thaware Colony","Shravasti Nagar","Angulimal Nagar"],
+  3:["Wanjra Industrial Area","Mehboobpura","Hamid Nagar","Sangam Nagar","Vandevi Nagar","Shivshakti Nagar","Garib Nawaz Nagar","Dhammanand Nagar","Vinoba Bhave Nagar","Rajiv Gandhi Nagar","Santosh Nagar","Sanjay Bagh Colony","Sanjeevani Colony","Pawan Nagar","Yashodhara Nagar"],
+  6:["Mahendra Nagar","Ekta Colony","Yadav Nagar","Sudam Nagar","Khante Nagar","Yashodeep Colony","Faruk Nagar","Siddharth Nagar","Teka","Devi Nagar","Panchsheel Nagar","Khobragade Nagar","Adarsh Nagar","Sujata Nagar","Vaishali Nagar","Milind Nagar"],
+  7:["New Indora","Maya Nagar","Model Town","Chocks Colony","Buddha Nagar","Ashi Nagar","Gurunanakpura","Kashmiri Galli","Balabhaupeth","Kurhadkarpeth","Ganobawadi","Lashkaribagh","Motibagh","Bhim Ratna Nagar","Bhonslewadi","Matawadi"]},
+ "Mangalwari": {
+  1:["Arya Nagar","Shambhu Nagar","Nara","Ashoka Nagar","Om Nagar","Kukreja Nagar","Ahuja Nagar","Santlalji Nagar","Dhamgale Nagar","Hudco Colony","Bhaktisagar Nagar","Jai-Vijay Layout","Bamleshwari Nagar","Malka Colony","Tarkeshwar Nagar"],
+  9:["Indora","Bezonbagh","Mecosabagh","Lumbini Nagar","Motibagh","Punjabi Line","Clark Town","Gaddigodam","Goal Bazar","Nayi Basti","Gadhe Ghat","Bairamji Town","Mangalwari","Mohan Nagar","Kasturchand Park"],
+  10:["Borgaon","Qutubshah Nagar","Shila Nagar","Police Line Takli","Samadhan Nagar","Adarsh Colony","Pension Nagar","Awasthi Nagar","Sadikabad","Mankapur","Chhaoni","Rajnagar","Ambedkar Nagar","Mahada Colony","Aakar Nagar"],
+  11:["Gorewada","Indrayani Nagar","Zingabai Takli","Baba Farid Nagar","Geeta Nagar","Godhani Road","Bhupesh Nagar","Barde Nagar","Mankapur","Indramata Nagar","Ayyappa Nagar","Godavari Nagar"]}
+};
+const WARD_INFO = {};
+Object.entries(ZONES).forEach(([z, ws]) => Object.entries(ws).forEach(([n, areas]) => WARD_INFO["Ward " + n] = { zone: z + " zone", areas }));
+WARD_INFO["Outside city limits"] = { zone: "Around Nagpur", areas: ["Kamptee","Hingna","Wadi","Butibori","Koradi","Mihan","Kalmeshwar"] };
+const WARDS = Object.keys(WARD_INFO).sort((x, y) => (parseInt(x.slice(5)) || 999) - (parseInt(y.slice(5)) || 999));
+const opts = (list, sel) => list.map(v => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${esc(v)}</option>`).join("");
+const wardOpts = sel => WARDS.map(w => `<option value="${w}" ${w === sel ? "selected" : ""}>${w} (${WARD_INFO[w].zone})</option>`).join("");
+const areaOpts = (w, sel) => w && WARD_INFO[w] ? opts([...new Set(WARD_INFO[w].areas)].sort().concat("Other"), sel) : "";
+function pickWard(v){ const r = $("region"); r.innerHTML = `<option value="">${t("choose")}</option>` + areaOpts(v); r.disabled = !v; }
+function filterWard(v){ filt.w = v; filt.r = ""; const r = $("fr"); r.innerHTML = `<option value="">${t("region")}: ${t("all")}</option>` + areaOpts(v); r.disabled = !v; drawDash(); }
+const CATS_EN = T.en.cats, STATUSES = ["Received","In Progress","Resolved","Rejected"];
+let lang = "en", user = null, profile = null, tab = "new", mode = "login", msg = "", regType = "phone", regStep = 0, pending = null, recovering = location.hash.includes("type=recovery"), all = [], filt = {s:"", c:"", q:"", w:"", r:""};
+const t = k => T[lang][k];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fakeEmail = phone => phone.replace(/\D/g, "") + "@gramsampark.app";
+const catName = c => T[lang].cats[CATS_EN.indexOf(c)] || c;
+
+function pwField(id, ac){
+  return `<div class="pw"><input id="${id}" type="password" autocomplete="${ac}"><button type="button" class="eye" onclick="togglePw('${id}', this)">${t("show")}</button></div>`;
+}
+function togglePw(id, btn){
+  const i = $(id), showing = i.type === "text";
+  i.type = showing ? "password" : "text"; btn.textContent = showing ? t("show") : t("hide");
+}
+function setLang(l){ lang = l; render(); }
+
+/* ===== 3. LOGIN / REGISTER ===== */
+async function register(){
+  const name = $("name").value.trim(), pass = $("pass").value, ward = $("ward").value, region = $("region").value;
+  const phone = ($("phone")?.value || "").trim(), email = ($("email")?.value || "").trim();
+  if (!name || !ward || !region || pass.length < 6) return show("Fill in name, ward, area and a password of 6+ characters.", true);
+  const extra = { full_name: name, phone: phone || null, email: email || null, village_id: $("vid").value.trim() || null, ward, region };
+  if (regType === "phone") {
+    if (phone.replace(/\D/g,"").length < 10) return show("Enter a 10-digit phone number.", true);
+    const { data, error } = await db.auth.signUp({ email: fakeEmail(phone), password: pass });
+    if (error) return show(error.message, true);
+    if (!data.session) return show("No session. Turn OFF 'Confirm email' in Supabase Authentication settings.", true);
+    return saveProfile(data.user.id, extra);
+  }
+  /* Email route: prove ownership with a 6-digit code sent to the inbox */
+  if (!/^\S+@\S+\.\S+$/.test(email)) return show("Enter a valid email address.", true);
+  const { error } = await db.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  if (error) return show(error.message, true);
+  pending = { extra, pass }; regStep = 1; msg = `<div class="ok">Code sent to ${esc(email)}. Check your inbox and spam folder.</div>`; render();
+}
+async function verifyEmail(){
+  const { data, error } = await db.auth.verifyOtp({ email: pending.extra.email, token: $("code").value.trim(), type: "email" });
+  if (error) return show("Wrong or expired code.", true);
+  const { error: e1 } = await db.auth.updateUser({ password: pending.pass });
+  if (e1) return show(e1.message, true);
+  saveProfile(data.user.id, pending.extra);
+}
+async function saveProfile(id, extra){
+  const { error } = await db.from("profiles").insert({ id, ...extra });
+  if (error) return show(error.message, true);
+  pending = null; regStep = 0; start();
+}
+async function login(){
+  const id = $("phone").value.trim();
+  const { error } = await db.auth.signInWithPassword({ email: id.includes("@") ? id : fakeEmail(id), password: $("pass").value });
+  if (error) return show("Wrong phone/email or password.", true);
+  start();
+}
+async function forgot(){
+  const id = $("phone").value.trim();
+  if (!id.includes("@")) return show("Enter your email above first. Phone-only accounts: ask the village head to reset your password.", true);
+  const { error } = await db.auth.resetPasswordForEmail(id, { redirectTo: location.origin + location.pathname });
+  show(error ? error.message : "Reset link sent. Open it from your email.", !!error);
+}
+async function setNewPassword(){
+  const p = $("np").value;
+  if (p.length < 6) return show("Password must be 6+ characters.", true);
+  const { error } = await db.auth.updateUser({ password: p });
+  if (error) return show(error.message, true);
+  recovering = false; history.replaceState(null, "", location.pathname); start();
+}
+async function logout(){ await db.auth.signOut(); user = profile = null; msg = ""; mode = "login"; render(); }
+async function start(){
+  const { data: { session } } = await db.auth.getSession();
+  user = session?.user || null;
+  if (user) { const { data } = await db.from("profiles").select("*").eq("id", user.id).single(); profile = data; }
+  msg = ""; tab = profile?.role === "head" ? "dash" : "new"; render();
+}
+function show(text, isErr){ msg = `<div class="${isErr ? "err" : "ok"}">${esc(text)}</div>`; const m = $("msg"); if (m) m.innerHTML = msg; }
+
+/* ===== 4. VILLAGER: SUBMIT AND TRACK ===== */
+let busy = false;
+async function submitComplaint(){   /* ignores a second click while the first is still sending */
+  if (busy) return; busy = true;
+  const b = $("sbtn"); if (b) { b.disabled = true; b.textContent = "Sending..."; }
+  try { await sendComplaint(); } finally { busy = false; if (b) { b.disabled = false; b.textContent = t("submit"); } }
+}
+async function sendComplaint(){
+  const title = $("ctitle").value.trim(), desc = $("cdesc").value.trim();
+  if (!title || !desc) return show("Title and description are required.", true);
+  let path = null; const f = $("cphoto").files[0];
+  if (f) {
+    path = `${user.id}/${Date.now()}_${f.name.replace(/[^\w.]/g, "_")}`;
+    const { error } = await db.storage.from("complaint-photos").upload(path, f);
+    if (error) return show("Photo upload failed: " + error.message, true);
+  }
+  const { data, error } = await db.from("complaints").insert({
+    user_id: user.id, category: $("ccat").value, title, description: desc,
+    priority: $("cprio").value, photo_url: path }).select().single();
+  if (error) return show(error.message, true);
+  msg = `<div class="ok">${t("sent")} ${esc(data.ref_no)}</div>`; tab = "mine"; render();
+}
+async function photoLink(path, btn){
+  const { data } = await db.storage.from("complaint-photos").createSignedUrl(path, 300);
+  if (data) window.open(data.signedUrl, "_blank");
+}
+function cardHTML(c, isHead){
+  const who = isHead && c.profiles ? `<div class="mu">${t("from")}: ${esc(c.profiles.full_name)} · ${esc(c.profiles.phone)} · ${esc(c.profiles.ward || "")} · ${esc(c.profiles.region || "")}</div>` : "";
+  const photo = c.photo_url ? `<button class="sm alt" onclick="photoLink('${esc(c.photo_url)}')">${t("viewphoto")}</button>` : "";
+  const stSel = isHead ? `<div class="row" style="margin-top:10px">
+      <select id="st_${c.id}">${STATUSES.map(s => `<option value="${s}" ${s === c.status ? "selected" : ""}>${t("sts")[s]}</option>`).join("")}</select>
+      <input id="rp_${c.id}" placeholder="${t("replyph")}" value="${esc(c.head_reply || "")}">
+      <button class="sm" onclick="updateComplaint('${c.id}')">${t("save")}</button></div>`
+    : (c.head_reply ? `<div class="reply"><b>${t("reply")}:</b> ${esc(c.head_reply)}</div>` : "");
+  return `<div class="card"><div class="ref">${esc(c.ref_no)} · ${catName(c.category)} · ${new Date(c.created_at).toLocaleDateString()} ${c.priority === "Urgent" ? "· <b style='color:var(--red)'>" + t("urgent") + "</b>" : ""}</div>
+    <h3 style="margin:4px 0">${esc(c.title)} <span class="badge ${c.status.replace(" ", "")}">${t("sts")[c.status]}</span>${c.status !== "Received" ? `<span class="chip chk">\u2713 ${t("seen")}</span>` : (isHead ? `<span class="chip unchk">${t("notchecked")}</span>` : "")}</h3>
+    <div>${esc(c.description)}</div>${who}${photo}${stSel}</div>`;
+}
+async function loadMine(){
+  const { data } = await db.from("complaints").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+  $("list").innerHTML = data?.length ? data.map(c => cardHTML(c, false)).join("") : `<p class="mu">${t("empty")}</p>`;
+}
+
+/* ===== 5. HEAD: SEE EVERYTHING, UPDATE, EXPORT ===== */
+async function loadAll(){
+  const { data } = await db.from("complaints").select("*, profiles(full_name, phone, ward, region)").order("created_at", { ascending: false });
+  all = data || []; drawDash();
+}
+function filtered(){
+  return all.filter(c => (!filt.s || c.status === filt.s) && (!filt.c || c.category === filt.c) && (!filt.w || c.profiles?.ward === filt.w) && (!filt.r || c.profiles?.region === filt.r) &&
+    (!filt.q || (c.title + " " + (c.profiles?.full_name || "")).toLowerCase().includes(filt.q.toLowerCase())));
+}
+function pickSec(k){ filt.s = k; drawDash(); }
+function toast(text){ const e = $("toast"); e.textContent = text; e.style.display = "block"; clearTimeout(window._tt); window._tt = setTimeout(() => e.style.display = "none", 3500); }
+function drawDash(){
+  const list = filtered();
+  const secs = [["", t("total")], ["Received", t("unchecked")], ["In Progress", t("sts")["In Progress"]], ["Resolved", t("sts")["Resolved"]], ["Rejected", t("sts")["Rejected"]]];
+  $("stats").innerHTML = secs.map(([k, label]) => `<div class="stat ${filt.s === k ? "on" : ""}" role="button" tabindex="0" onclick="pickSec('${k}')" onkeydown="if(event.key==='Enter')pickSec('${k}')"><b>${k ? all.filter(c => c.status === k).length : all.length}</b>${label}</div>`).join("");
+  $("list").innerHTML = list.length ? list.map(c => cardHTML(c, true)).join("") : `<p class="mu">${t("empty")}</p>`;
+}
+async function updateComplaint(id){
+  let st = $("st_" + id).value; const rp = $("rp_" + id).value.trim();
+  if (st === "Received" && rp) st = "In Progress";   /* writing a reply means the head has looked at it */
+  const { error } = await db.from("complaints").update({ status: st, head_reply: rp }).eq("id", id);
+  if (error) return alert(error.message);
+  const c = all.find(x => x.id === id);
+  toast((c ? c.ref_no + ": " : "") + t("saved") + " " + (st === "Received" ? t("unchecked") : t("sts")[st]));
+  await loadAll();
+}
+function exportCSV(){
+  const rows = [["Ref","Date","Villager","Phone","Ward","Region","Category","Title","Description","Priority","Status","Reply"]];
+  filtered().forEach(c => rows.push([c.ref_no, c.created_at.slice(0,10), c.profiles?.full_name, c.profiles?.phone, c.profiles?.ward, c.profiles?.region, c.category, c.title, c.description, c.priority, c.status, c.head_reply]));
+  const csv = rows.map(r => r.map(v => '"' + String(v ?? "").replace(/"/g, '""') + '"').join(",")).join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "complaints.csv"; a.click();
+}
+
+/* ===== 6. DRAW THE SCREENS ===== */
+function render(){
+  $("logout").style.display = user ? "" : "none"; $("logout").textContent = t("logout");
+  const app = $("app");
+  if (recovering) { app.innerHTML = `<div class="card"><label>${t("newpass")}</label>${pwField("np", "new-password")}<p><button onclick="setNewPassword()">${t("save")}</button></p><div id="msg">${msg}</div></div>`; return; }
+  if (!user) {
+    const reg = mode === "register", em = regType === "email";
+    if (reg && regStep === 1) { app.innerHTML = `<div class="card"><label>${t("code")}</label><input id="code" inputmode="numeric" autocomplete="one-time-code"><p><button onclick="verifyEmail()">${t("verify")}</button> <button class="alt" onclick="regStep=0;msg='';render()">${t("back")}</button></p><div id="msg">${msg}</div></div>`; return; }
+    app.innerHTML = `<div class="hero"><h2>Gram Sampark</h2><p>${t("tag")}</p></div><div class="card"><div class="tabs">
+      <button class="${!reg ? "on" : "alt"}" onclick="mode='login';msg='';render()">${t("login")}</button>
+      <button class="${reg ? "on" : "alt"}" onclick="mode='register';msg='';render()">${t("register")}</button></div>
+      ${reg ? `<div class="tabs"><button class="${!em ? "on" : "alt"}" onclick="regType='phone';render()">${t("byphone")}</button><button class="${em ? "on" : "alt"}" onclick="regType='email';render()">${t("byemail")}</button></div>
+        <label>${t("name")}</label><input id="name" autocomplete="name">` : ""}
+      ${reg ? (em ? `<label>${t("email")}</label><input id="email" type="email" autocomplete="email"><label>${t("phoneopt")}</label><input id="phone" type="tel" inputmode="numeric">`
+        : `<label>${t("phone")}</label><input id="phone" type="tel" inputmode="numeric" autocomplete="tel">`) : `<label>${t("ident")}</label><input id="phone" autocomplete="username">`}
+      ${reg ? `<label>${t("vid")}</label><input id="vid"><label>${t("ward")}</label><select id="ward" onchange="pickWard(this.value)"><option value="">${t("choose")}</option>${wardOpts()}</select><label>${t("region")}</label><select id="region" disabled><option value="">${t("choose")}</option></select>` : ""}
+      <label>${t("pass")}</label>${pwField("pass", reg ? "new-password" : "current-password")}
+      <p><button onclick="${reg ? "register()" : "login()"}">${reg ? (em ? t("sendcode") : t("register")) : t("login")}</button></p>
+      ${!reg ? `<p><a href="#" onclick="forgot();return false">${t("forgot")}</a></p>` : ""}<div id="msg">${msg}</div></div>`;
+    return;
+  }
+  if (profile?.role === "head") {
+    app.innerHTML = `<h2>${t("dash")}</h2><div class="stats" id="stats"></div><div id="analytics" class="analytics"></div>
+      <div class="card row"><input placeholder="${t("search")}" value="${esc(filt.q)}" oninput="filt.q=this.value;drawDash()">
+      <select onchange="filt.c=this.value;drawDash()"><option value="">${t("cat")}: ${t("all")}</option>${CATS_EN.map((c, i) => `<option value="${c}" ${filt.c === c ? "selected" : ""}>${t("cats")[i]}</option>`).join("")}</select>
+      <select onchange="filterWard(this.value)"><option value="">${t("ward")}: ${t("all")}</option>${wardOpts(filt.w)}</select>
+      <select id="fr" onchange="filt.r=this.value;drawDash()" ${filt.w ? "" : "disabled"}><option value="">${t("region")}: ${t("all")}</option>${areaOpts(filt.w, filt.r)}</select>
+      <button class="alt" onclick="exportCSV()">${t("csv")}</button></div><div id="list">${t("loading")}</div>`;
+    loadAll(); return;
+  }
+  app.innerHTML = `<div class="tabs"><button class="${tab === "new" ? "on" : "alt"}" onclick="tab='new';msg='';render()">${t("newc")}</button>
+    <button class="${tab === "mine" ? "on" : "alt"}" onclick="tab='mine';render()">${t("mine")}</button></div>` +
+    (tab === "new" ? `<div class="card"><label>${t("cat")}</label><select id="ccat">${CATS_EN.map((c, i) => `<option value="${c}">${t("cats")[i]}</option>`).join("")}</select>
+      <label>${t("title")}</label><input id="ctitle"><label>${t("desc")}</label><textarea id="cdesc" rows="5"></textarea>
+      <label>${t("prio")}</label><select id="cprio"><option value="Normal">${t("normal")}</option><option value="Urgent">${t("urgent")}</option></select>
+      <label>${t("photo")}</label><input id="cphoto" type="file" accept="image/*" onchange="previewPhoto()"><img id="photoPreview" class="preview" alt="Photo preview">
+      <p><button id="sbtn" onclick="submitComplaint()">${t("submit")}</button></p><div id="msg">${msg}</div></div>`
+    : `<div class="reftrack"><input id="refSearch" placeholder="Search reference, title or status" oninput="complaintSearch()"></div><div id="msg">${msg}</div><div id="list">${t("loading")}</div>`);
+  if (tab === "mine") loadMine();
+}
+
+
+/* ===== 7. ADDITIVE ENHANCEMENTS ===== */
+const ENH_STEPS=["Received","In Progress","Resolved"];
+function statusTimeline(c){const idx=c.status==="Rejected"?2:Math.max(0,ENH_STEPS.indexOf(c.status));return `<div class="timeline">${ENH_STEPS.map((x,i)=>`<div class="step ${i<=idx?"done":""} ${i===idx?"current":""}">${i<=idx?"✓ ":""}${esc(t("sts")[x])}</div>`).join("")}</div>`;}
+function previewPhoto(){const f=$("cphoto")?.files?.[0],img=$("photoPreview");if(!img)return;if(!f){img.style.display="none";return}if(!f.type.startsWith("image/"))return show("Please select an image file.",true);if(f.size>5*1024*1024)return show("Photo must be 5 MB or smaller.",true);img.src=URL.createObjectURL(f);img.style.display="block";}
+function complaintSearch(){const q=($("refSearch")?.value||"").trim().toLowerCase();document.querySelectorAll("#list .card").forEach(x=>x.style.display=!q||x.textContent.toLowerCase().includes(q)?"":"none");}
+function dashboardAnalytics(){const host=$("analytics");if(!host)return;const counts={};CATS_EN.forEach(c=>counts[c]=all.filter(x=>x.category===c).length);const max=Math.max(1,...Object.values(counts));const rows=CATS_EN.filter(c=>counts[c]>0).map(c=>`<div class="barrow"><span>${esc(catName(c))}</span><div class="bar"><i style="width:${Math.round(counts[c]/max*100)}%"></i></div><b>${counts[c]}</b></div>`).join("")||`<span class="mu">${t("empty")}</span>`;const urgent=all.filter(c=>c.priority==="Urgent").length,resolved=all.filter(c=>c.status==="Resolved").length;host.innerHTML=`<div class="chartcard"><h3 style="margin-top:0">Complaints by category</h3>${rows}</div><div class="chartcard"><h3 style="margin-top:0">Overview</h3><div class="metricline"><span>Total</span><b>${all.length}</b></div><div class="metricline"><span>Urgent</span><b>${urgent}</b></div><div class="metricline"><span>Resolved</span><b>${resolved}</b></div><div class="metricline"><span>Resolution rate</span><b>${Math.round((resolved/(all.length||1))*100)}%</b></div></div>`;}
+function checkStatusNotifications(items){try{const key="gs_last_statuses",old=JSON.parse(localStorage.getItem(key)||"{}"),changed=items.filter(c=>old[c.ref_no]&&old[c.ref_no]!==c.status);changed.forEach(c=>{const text=`${c.ref_no}: ${t("sts")[c.status]||c.status}`;toast(text);if("Notification" in window&&Notification.permission==="granted")new Notification("Gram Sampark",{body:text});});if(changed.length&&"Notification" in window&&Notification.permission==="default")Notification.requestPermission().catch(()=>{});localStorage.setItem(key,JSON.stringify(Object.fromEntries(items.map(c=>[c.ref_no,c.status]))));}catch(e){}}
+const _gsLoadMine=loadMine;loadMine=async function(){const {data,error}=await db.from("complaints").select("*").eq("user_id",user.id).order("created_at",{ascending:false});if(error)return show("Unable to load complaints: "+error.message,true);const items=data||[];checkStatusNotifications(items);$("list").innerHTML=items.length?items.map(c=>cardHTML(c,false)+statusTimeline(c)).join(""):`<p class="mu">${t("empty")}</p>`;};
+const _gsLoadAll=loadAll;loadAll=async function(){const {data,error}=await db.from("complaints").select("*, profiles(full_name, phone, ward, region)").order("created_at",{ascending:false});if(error)return show("Unable to load dashboard: "+error.message,true);all=data||[];drawDash();};
+const _gsDrawDash=drawDash;drawDash=function(){_gsDrawDash();const list=filtered();$("list").innerHTML=list.length?list.map(c=>cardHTML(c,true)+statusTimeline(c)).join(""):`<p class="mu">${t("empty")}</p>`;dashboardAnalytics();};
+
+db.auth.getSession().then(({ data }) => data.session ? start() : render());
+</script>
+</body>
+</html>
